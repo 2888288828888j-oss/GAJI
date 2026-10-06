@@ -1,0 +1,648 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ShepherdHub</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+/* Layout: sticky top bar, one content column (max 1120px), views swapped in place; hero is type-led with the church search as the first action. */
+:root{
+  --bg:#F3F6F1; --surface:#FFFFFF; --sunk:#E8EEE7; --fg:#14231D; --muted:#566860; --line:#D7E0D8;
+  --accent:#2B5A4A; --accent-fg:#FFFFFF; --accent-soft:#DCEBE3;
+  --lamp:#8F5E10; --lamp-bg:#FAEFD6;
+  --ok:#25704A; --warn:#9A5A07; --bad:#B02A1E;
+  --f-display:"Nanum Myeongjo","Noto Serif KR",serif;
+  --f-body:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1713; --surface:#15211C; --sunk:#1C2B25; --fg:#E5EEE8; --muted:#97ABA2; --line:#273830;
+  --accent:#7CC2A8; --accent-fg:#0E1713; --accent-soft:#1F3A30;
+  --lamp:#E5B055; --lamp-bg:#2B2411;
+  --ok:#6CCB97; --warn:#E3A44B; --bad:#FF8F82; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0E1713; --surface:#15211C; --sunk:#1C2B25; --fg:#E5EEE8; --muted:#97ABA2; --line:#273830;
+  --accent:#7CC2A8; --accent-fg:#0E1713; --accent-soft:#1F3A30;
+  --lamp:#E5B055; --lamp-bg:#2B2411;
+  --ok:#6CCB97; --warn:#E3A44B; --bad:#FF8F82; color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
+h1,h2,h3{font-family:var(--f-display);line-height:1.3;margin:0;text-wrap:balance}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.wrap{max-width:1120px;margin-inline:auto;padding-inline:16px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+.logo{display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;font-family:var(--f-display);font-weight:800;font-size:20px;color:var(--fg)}
+.logo svg{color:var(--accent)}
+.nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+.nav button{flex:none;background:none;border:0;padding:7px 12px;border-radius:6px;cursor:pointer;color:var(--muted);font-weight:500}
+.nav button:hover{background:var(--sunk);color:var(--fg)}
+.nav button[aria-current="page"]{background:var(--accent);color:var(--accent-fg)}
+.userbox{display:flex;align-items:center;gap:8px;min-width:0}
+.uname{font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=email],input[type=tel],input[type=search],select,textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-width:0}
+textarea{resize:vertical;min-height:84px}
+input[type=file]{width:100%;font-size:13px}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{margin-top:5px;flex:none;accent-color:var(--accent)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--lamp-bg);color:var(--lamp);white-space:nowrap}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--accent-soft);color:var(--ok)}
+.pill.warn{background:var(--lamp-bg);color:var(--warn)}
+.pill.bad{background:var(--sunk);color:var(--bad)}
+
+main{padding-block:28px 56px}
+.view[hidden]{display:none}
+.sec{margin-top:44px}
+.sec>h2{font-size:24px;margin-bottom:6px}
+.sec>.sub{color:var(--muted);margin-bottom:18px;max-width:62ch}
+.pagehead{margin-bottom:20px}
+.pagehead h1{font-size:30px}
+.pagehead p{color:var(--muted);margin-top:4px;max-width:64ch}
+
+/* hero */
+.hero{padding-block:18px 8px}
+.hero h1{font-size:clamp(34px,6.2vw,60px);font-weight:800;letter-spacing:-.02em;max-width:15ch}
+.hero h1 em{font-style:normal;color:var(--accent);background:linear-gradient(transparent 68%,var(--accent-soft) 68%)}
+.hero p.lead{margin-top:16px;max-width:54ch;font-size:17px;color:var(--muted)}
+.searchbar{margin-top:24px;display:grid;grid-template-columns:1fr auto;gap:8px;max-width:620px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:5px 12px;border-radius:99px;cursor:pointer;font-size:13px}
+.chip:hover,.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+
+.cols3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.panel h3{font-size:18px;margin-bottom:6px}
+.panel p,.panel li{color:var(--muted);font-size:14px}
+.panel ul{margin:8px 0 0;padding-left:18px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.steps>div{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.steps>div:last-child{border-right:0}
+.steps b{display:block;margin-bottom:4px}
+.steps span{color:var(--muted);font-size:14px}
+.stepno{font-family:var(--f-display);font-size:13px;color:var(--accent);font-weight:800}
+
+/* church cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ccard h3{font-size:18px}
+.ccard .meta{color:var(--muted);font-size:13px}
+.ccard .intro{font-size:14px;color:var(--fg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ccard .row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.linkbtn{background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit;text-align:left}
+.linkbtn:hover{color:var(--accent)}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:16px}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+
+/* library */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:600;background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.ftype{font-weight:700;font-size:12px;color:var(--accent)}
+
+/* chat */
+.chat{display:grid;grid-template-columns:240px 1fr;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;height:min(640px,calc(100dvh - 220px));min-height:440px}
+.rooms{border-right:1px solid var(--line);overflow-y:auto;background:var(--sunk);padding:8px;display:flex;flex-direction:column;gap:2px}
+.rooms button{background:none;border:0;text-align:left;padding:9px 10px;border-radius:6px;cursor:pointer}
+.rooms button:hover{background:var(--surface)}
+.rooms button[aria-current="true"]{background:var(--surface);box-shadow:inset 3px 0 0 var(--accent)}
+.rooms b{display:block;font-size:14px}
+.rooms span{font-size:12px;color:var(--muted)}
+.convo{display:flex;flex-direction:column;min-width:0;min-height:0}
+.convo-head{padding:12px 16px;border-bottom:1px solid var(--line)}
+.convo-head b{font-family:var(--f-display);font-size:17px}
+.convo-head p{font-size:13px;color:var(--muted)}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.msg{max-width:min(520px,88%);min-width:0}
+.msg .who{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.msg .bubble{margin-top:3px;background:var(--sunk);padding:9px 12px;border-radius:10px;border-top-left-radius:2px}
+.msg.mine{align-self:flex-end}
+.msg.mine .who{justify-content:flex-end}
+.msg.mine .bubble{background:var(--accent-soft);border-top-left-radius:10px;border-top-right-radius:2px}
+.msg.held .bubble{border:1px dashed var(--warn);background:var(--lamp-bg);color:var(--warn);font-size:13px}
+.rep{background:none;border:0;color:var(--muted);font-size:12px;cursor:pointer;padding:0;text-decoration:underline}
+.composer{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.composer input{flex:1}
+.hint{font-size:12px;color:var(--muted);padding:0 12px 10px}
+
+/* gate, verify, admin */
+.gate{max-width:560px;margin:40px auto;text-align:center;padding:32px 20px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.gate svg{color:var(--lamp);margin-bottom:8px}
+.gate h2{font-size:22px;margin-bottom:8px}
+.gate p{color:var(--muted);margin-bottom:16px}
+.form{display:grid;gap:14px;max-width:680px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stepper{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.stepper span{font-size:13px;padding:5px 12px;border-radius:99px;background:var(--sunk);color:var(--muted)}
+.stepper span.on{background:var(--accent);color:var(--accent-fg)}
+.stepper span.done{background:var(--accent-soft);color:var(--ok)}
+.notice{border-left:3px solid var(--lamp);background:var(--lamp-bg);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px}
+.timeline{display:grid;gap:0;max-width:520px}
+.timeline>div{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.timeline .dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:7px;background:var(--line)}
+.timeline .dot.on{background:var(--accent)}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:6px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.appcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;margin-bottom:14px}
+.appcard header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;font-size:14px}
+.kv dt{font-size:12px;color:var(--muted)}
+.kv dd{margin:0}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.actions input{flex:1;min-width:140px}
+
+/* modal + toast */
+.overlay{position:fixed;inset:0;background:rgba(8,16,12,.55);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px 16px;overflow-y:auto}
+.overlay[hidden]{display:none}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:100%;max-width:560px;margin-block:auto;padding:22px;display:grid;gap:14px}
+.modal h2{font-size:22px}
+.modal .x{justify-self:end;margin-bottom:-8px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px;border:1px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer;font-weight:600}
+.gbtn:hover{border-color:var(--accent)}
+.demo{display:grid;gap:8px}
+.demo button{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);background:var(--bg);border-radius:6px;cursor:pointer;text-align:left}
+.demo button:hover{border-color:var(--accent)}
+.demo small{color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:60;max-width:calc(100% - 32px);font-size:14px}
+.toast[hidden]{display:none}
+.times{width:100%;min-width:0}
+.times td{padding:6px 0;border:0}
+.map{background:var(--sunk);border:1px dashed var(--line);border-radius:8px;padding:14px;font-size:13px;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-block:22px;color:var(--muted);font-size:13px}
+footer .wrap{display:grid;gap:6px}
+
+@media (max-width:760px){
+  .filters{grid-template-columns:1fr 1fr}
+  .filters .field:first-child{grid-column:1/-1}
+  .two{grid-template-columns:1fr}
+  .steps>div{border-right:0;border-bottom:1px solid var(--line)}
+  .steps>div:last-child{border-bottom:0}
+  .chat{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:calc(100dvh - 200px)}
+  .rooms{flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--line)}
+  .rooms button{flex:none;min-width:150px}
+  .uname{display:none}
+}
+@media (prefers-reduced-motion:no-preference){ .btn,.chip{transition:border-color .15s,background .15s} }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <button class="logo" id="logo" aria-label="ShepherdHub 홈">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 22V9a5 5 0 1 1 5 5"/></svg>
+        ShepherdHub
+      </button>
+      <div class="userbox" id="userbox"></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="주 메뉴"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="v-home"></section>
+  <section class="view" id="v-churches" hidden></section>
+  <section class="view" id="v-library" hidden></section>
+  <section class="view" id="v-chat" hidden></section>
+  <section class="view" id="v-verify" hidden></section>
+  <section class="view" id="v-admin" hidden></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b>ShepherdHub</b> · 전국 목회자 커뮤니티와 교회 소개 플랫폼</div>
+    <div>이 화면은 작동 시안입니다. 구글 로그인, 저장, 파일 업로드는 서버를 연결한 뒤에 실제로 동작하며, 교회와 회원 정보는 모두 예시입니다.</div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+/* ---------- sample data ---------- */
+var CHURCHES=[
+ {id:1,name:'새벽들교회',region:'강원',city:'원주시',denom:'예장 통합',pastor:'최도현 목사',addr:'강원특별자치도 원주시 예시로 12',tel:'033-000-0101',
+  times:[['주일예배 1부','오전 9:00'],['주일예배 2부','오전 11:00'],['수요기도회','저녁 7:30'],['새벽기도회','오전 5:30']],
+  intro:'지역 어르신과 청년이 함께 예배하는 교회입니다. 매달 마지막 주 토요일에 마을 공동 식사를 합니다.',tags:['청년부','마을 돌봄','새벽기도'],
+  news:[['2026-10-03','10월 마을 공동 식사 안내'],['2026-09-21','청년부 가을 수련회 후기']]},
+ {id:2,name:'은혜샘물교회',region:'경기',city:'수원시',denom:'기독교대한감리회',pastor:'정하은 목사',addr:'경기도 수원시 예시구 샘물로 45',tel:'031-000-0202',
+  times:[['주일예배','오전 10:30'],['어린이예배','오전 9:30'],['금요기도회','저녁 8:00']],
+  intro:'가정과 다음 세대를 중심으로 세워가는 교회입니다. 주중에는 방과후 공부방을 운영합니다.',tags:['다음 세대','공부방','가정'],
+  news:[['2026-10-01','방과후 공부방 신입생 모집'],['2026-09-14','추석 감사예배']]},
+ {id:3,name:'푸른초장교회',region:'서울',city:'마포구',denom:'예장 합동',pastor:'한시온 목사',addr:'서울특별시 마포구 예시길 8',tel:'02-000-0303',
+  times:[['주일예배 1부','오전 8:30'],['주일예배 2부','오전 11:00'],['청년예배','오후 2:00'],['수요예배','저녁 7:30']],
+  intro:'도심 속에서 직장인과 대학생을 섬기는 교회입니다. 말씀 묵상과 소그룹 나눔을 중시합니다.',tags:['직장인','대학부','소그룹'],
+  news:[['2026-10-04','대학부 새가족 환영회'],['2026-09-28','소그룹 리더 모임']]},
+ {id:4,name:'갈릴리바다교회',region:'경상',city:'부산 해운대구',denom:'기하성',pastor:'오은서 목사',addr:'부산광역시 해운대구 예시해변로 3',tel:'051-000-0404',
+  times:[['주일예배','오전 11:00'],['저녁예배','오후 6:00'],['철야기도회','금요일 밤 10:00']],
+  intro:'바닷가 마을에서 찬양과 기도로 예배하는 교회입니다. 여름마다 해변 문화사역을 합니다.',tags:['찬양','기도','문화사역'],
+  news:[['2026-09-30','가을 찬양 집회 안내']]},
+ {id:5,name:'감사의숲교회',region:'전라',city:'광주 북구',denom:'기장',pastor:'서재윤 목사',addr:'광주광역시 북구 예시숲길 21',tel:'062-000-0505',
+  times:[['주일예배','오전 10:00'],['수요기도회','저녁 7:30']],
+  intro:'지역 환경과 이웃을 돌보는 작은 공동체입니다. 텃밭 나눔과 중고 장터를 함께 운영합니다.',tags:['환경','이웃 돌봄','텃밭'],
+  news:[['2026-10-02','10월 중고 장터 일정'],['2026-09-18','텃밭 수확 감사 나눔']]},
+ {id:6,name:'한빛언덕교회',region:'충청',city:'대전 유성구',denom:'침례회',pastor:'문지안 목사',addr:'대전광역시 유성구 예시언덕로 77',tel:'042-000-0606',
+  times:[['주일예배 1부','오전 9:30'],['주일예배 2부','오전 11:30'],['수요예배','저녁 7:30']],
+  intro:'연구단지 주변 가정과 유학생을 환영하는 교회입니다. 영어 예배 시간이 따로 있습니다.',tags:['영어예배','유학생','가정'],
+  news:[['2026-10-05','영어예배 새가족 안내']]},
+ {id:7,name:'바람의노래교회',region:'제주',city:'제주시',denom:'예장 통합',pastor:'강예린 목사',addr:'제주특별자치도 제주시 예시바람로 5',tel:'064-000-0707',
+  times:[['주일예배','오전 10:30'],['수요기도회','저녁 7:00']],
+  intro:'섬 지역 교회들과 협력하며 소규모 예배 공동체를 이어가고 있습니다.',tags:['지역 협력','소규모'],
+  news:[['2026-09-25','도서 지역 교회 방문 일정']]},
+ {id:8,name:'사랑의등대교회',region:'인천',city:'연수구',denom:'성결교회',pastor:'윤태오 목사',addr:'인천광역시 연수구 예시항로 90',tel:'032-000-0808',
+  times:[['주일예배 1부','오전 9:00'],['주일예배 2부','오전 11:00'],['금요기도회','저녁 8:00']],
+  intro:'항구 도시의 이웃에게 쉼터가 되는 교회입니다. 이주민 상담과 한글 교실을 열고 있습니다.',tags:['이주민','한글 교실','상담'],
+  news:[['2026-10-01','한글 교실 가을 학기 등록'],['2026-09-20','이웃 초청 잔치']]}
+];
+var REGIONS=['서울','경기','인천','강원','충청','전라','경상','제주'];
+var DENOMS=['예장 통합','예장 합동','기독교대한감리회','기장','기하성','침례회','성결교회'];
+var LIB=[
+ {id:1,title:'청소년부 가을 수련회 진행 PPT',type:'PPT',cat:'청소년·교육',by:'은혜샘물교회',n:42,date:'2026-09-29',size:'18MB',tags:['수련회','청소년']},
+ {id:2,title:'추수감사주일 예배 순서지 양식',type:'PDF',cat:'설교·예배',by:'푸른초장교회',n:67,date:'2026-09-27',size:'1.2MB',tags:['감사주일','순서지']},
+ {id:3,title:'새가족 환영 포스터 시안 3종',type:'이미지',cat:'행사 포스터',by:'한빛언덕교회',n:31,date:'2026-09-25',size:'9MB',tags:['새가족','포스터']},
+ {id:4,title:'교회 재정 보고서 서식',type:'XLSX',cat:'행정 서식',by:'새벽들교회',n:88,date:'2026-09-22',size:'240KB',tags:['재정','서식']},
+ {id:5,title:'어린이 성경학교 활동 사진 모음',type:'이미지',cat:'사진',by:'은혜샘물교회',n:19,date:'2026-09-18',size:'35MB',tags:['어린이','성경학교']},
+ {id:6,title:'소그룹 인도자 훈련 교안',type:'PPT',cat:'청소년·교육',by:'푸른초장교회',n:54,date:'2026-09-12',size:'6MB',tags:['소그룹','훈련']},
+ {id:7,title:'교회 행사 기부금영수증 안내문',type:'DOCX',cat:'행정 서식',by:'사랑의등대교회',n:73,date:'2026-09-08',size:'180KB',tags:['세무','안내문']}
+];
+var LIBCATS=['설교·예배','청소년·교육','행사 포스터','사진','행정 서식'];
+var ROOMS=[
+ {id:'all',name:'전체 라운지',desc:'전국 인증 목회자가 함께 쓰는 방입니다.',msgs:[
+  ['정하은 목사','수원','이번 주 교역자 모임 자료를 자료실에 올렸습니다. 필요하신 분은 받아가세요.','오전 9:12'],
+  ['한시온 목사','서울','감사합니다. 대학부 새가족 환영회 순서도 곧 공유하겠습니다.','오전 9:40'],
+  ['오은서 목사','부산','가을 찬양 집회에 함께하실 팀을 찾고 있습니다.','오전 10:05']]},
+ {id:'gw',name:'지역방 · 강원',desc:'강원 지역 목회자 모임입니다.',msgs:[
+  ['최도현 목사','원주','다음 달 지역 목회자 기도회 장소를 정해야 합니다. 의견 부탁드립니다.','어제 18:20'],
+  ['이사무엘 목사','춘천','춘천 쪽 교회에서 장소를 제공할 수 있습니다.','어제 18:41']]},
+ {id:'youth',name:'청소년부 · 교육',desc:'교육부서 교역자를 위한 방입니다.',msgs:[
+  ['정하은 목사','수원','수련회 프로그램 중 조별 활동이 반응이 좋았습니다.','월요일 14:02'],
+  ['윤태오 목사','인천','저희도 비슷하게 진행했습니다. 자료 교환하면 좋겠네요.','월요일 15:30']]},
+ {id:'worship',name:'찬양 · 예배',desc:'예배 구성과 찬양팀 운영을 나눕니다.',msgs:[
+  ['오은서 목사','부산','예배 시간 단축 때문에 순서를 조정해 보신 분 계신가요?','일요일 20:11']]},
+ {id:'admin',name:'행정 · 세무 · 법률',desc:'교회 운영 행정을 나눕니다.',msgs:[
+  ['윤태오 목사','인천','기부금영수증 발급 절차를 정리한 안내문을 자료실에 올렸습니다.','화요일 11:05'],
+  ['문지안 목사','대전','건물 임대 계약서 검토를 받아본 경험 있으신 분 계신가요?','화요일 13:48']]}
+];
+var CHECKS=['안수증 원본 대조','교회 대표전화 확인','추천인 2명 확인','이단·사이비 단체 대조'];
+
+/* ---------- state ---------- */
+var accounts={
+ member:{key:'member',name:'김은혜',email:'grace.kim@example.com',role:'member',status:'none',desc:'일반회원'},
+ pastor_new:{key:'pastor_new',name:'박요한 목사',email:'john.park@example.com',role:'pastor',status:'none',desc:'목회자 · 인증 신청 전'},
+ pastor_ok:{key:'pastor_ok',name:'이사무엘 목사',email:'samuel.lee@example.com',role:'pastor',status:'approved',desc:'인증 완료 목회자'},
+ admin:{key:'admin',name:'운영팀',email:'ops@example.com',role:'admin',status:'approved',desc:'운영자'}
+};
+var S={user:null,view:'home',favs:{},q:'',region:'',denom:'',favOnly:false,
+ libQ:'',libCat:'',room:'all',step:0,form:{},tab:'apps',reportsDone:{},
+ apps:[
+  {id:101,key:null,name:'강민준',church:'새길교회',denom:'예장 통합',presb:'서울노회',tel:'02-000-0911',date:'2026-10-05',docs:['안수증_강민준.jpg','교회고유번호증.pdf'],refs:['pastor.a@example.com','pastor.b@example.com'],checks:[true,false,false,false],status:'pending',reason:''},
+  {id:102,key:null,name:'송유리',church:'해안교회',denom:'기장',presb:'동해노회',tel:'033-000-0922',date:'2026-10-04',docs:['안수증_송유리.pdf','재직증명서.pdf'],refs:['ref.c@example.com','ref.d@example.com'],checks:[true,true,false,false],status:'pending',reason:''}
+ ],
+ reports:[
+  {id:1,target:'자료실 · 특정 단체 홍보로 보이는 PPT',reason:'특정 단체 가입을 유도하는 문구가 있습니다.',state:'open'},
+  {id:2,target:'전체 라운지 · 외부 링크가 포함된 메시지',reason:'외부 링크 반복 게시',state:'open'}
+ ],
+ chats:{}
+};
+ROOMS.forEach(function(r){S.chats[r.id]=r.msgs.map(function(m){return {who:m[0],place:m[1],tx:m[2],t:m[3],mine:false,held:false,rep:false}})});
+var nextApp=200,nextLib=100;
+
+function isPastor(){return S.user&&((S.user.role==='pastor'&&S.user.status==='approved')||S.user.role==='admin')}
+function isAdmin(){return S.user&&S.user.role==='admin'}
+
+/* ---------- shell ---------- */
+function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(function(){t.hidden=true},3200)}
+function openModal(html){$('#modal').innerHTML=html;$('#overlay').hidden=false;var f=$('#modal button,#modal input,#modal textarea');if(f)f.focus()}
+function closeModal(){$('#overlay').hidden=true;$('#modal').innerHTML=''}
+$('#overlay').addEventListener('click',function(e){if(e.target.id==='overlay')closeModal()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('#overlay').hidden)closeModal()});
+$('#logo').addEventListener('click',function(){go('home')});
+
+function renderBar(){
+  var items=[['home','홈'],['churches','교회 찾기'],['library','자료실'],['chat','목회자 라운지'],['verify','목회자 인증']];
+  if(isAdmin())items.push(['admin','운영']);
+  $('#nav').innerHTML=items.map(function(i){return '<button data-v="'+i[0]+'"'+(S.view===i[0]?' aria-current="page"':'')+'>'+i[1]+'</button>'}).join('');
+  $$('#nav button').forEach(function(b){b.addEventListener('click',function(){go(b.dataset.v)})});
+  var u=S.user,h='';
+  if(!u){h='<button class="btn primary sm" id="loginbtn">Google로 로그인</button>'}
+  else{
+    h=(isPastor()?'<span class="badge">인증 목회자</span>':u.status==='pending'?'<span class="pill warn">인증 심사 중</span>':u.role==='admin'?'<span class="pill">운영자</span>':'<span class="pill">일반회원</span>')+
+      '<span class="uname">'+esc(u.name)+'</span><button class="btn sm" id="switchbtn">계정 전환</button><button class="btn sm" id="logoutbtn">로그아웃</button>';
+  }
+  $('#userbox').innerHTML=h;
+  var a=$('#loginbtn');if(a)a.addEventListener('click',openLogin);
+  a=$('#switchbtn');if(a)a.addEventListener('click',openLogin);
+  a=$('#logoutbtn');if(a)a.addEventListener('click',function(){S.user=null;toast('로그아웃했습니다.');refresh()});
+}
+function go(v){
+  S.view=v;
+  $$('.view').forEach(function(s){s.hidden=(s.id!=='v-'+v)});
+  renderBar();
+  ({home:renderHome,churches:renderChurches,library:renderLibrary,chat:renderChat,verify:renderVerify,admin:renderAdmin})[v]();
+  window.scrollTo(0,0);
+}
+function refresh(){if(S.view==='admin'&&!isAdmin())S.view='home';go(S.view)}
+
+function openLogin(){
+  var list=Object.keys(accounts).map(function(k){var a=accounts[k];return '<button data-k="'+k+'"><span><b>'+esc(a.name)+'</b><br><small>'+esc(a.desc)+'</small></span><span class="pill">체험</span></button>'}).join('');
+  openModal('<button class="btn sm x" id="mx">닫기</button><h2>로그인</h2>'+
+   '<button class="gbtn" id="g"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.5 5.8c4.4-4 6.8-10 6.8-17.2z"/><path fill="#FBBC05" d="M10.5 28.7a14.500 14.500 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.100 15.900-5.800l-7.500-5.800c-2.100 1.400-4.800 2.300-8.400 2.300-6.300 0-11.600-4.100-13.500-9.800l-7.900 6.100C6.500 42.600 14.600 48 24 48z"/></svg>Google 계정으로 계속하기</button>'+
+   '<p class="lbl" style="font-weight:400">실제 서비스에서는 이 버튼이 구글 로그인 창을 엽니다. 지금은 시안이라 아래 체험 계정으로 들어갑니다.</p>'+
+   '<div class="demo">'+list+'</div>');
+  $('#mx').addEventListener('click',closeModal);
+  $('#g').addEventListener('click',function(){toast('시안에서는 아래 체험 계정을 선택해 주세요.')});
+  $$('.demo button').forEach(function(b){b.addEventListener('click',function(){S.user=accounts[b.dataset.k];closeModal();toast(S.user.name+' 계정으로 로그인했습니다.');refresh()})});
+}
+function gate(title,body,btns){return '<div class="gate"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><h2>'+title+'</h2><p>'+body+'</p><div class="actions" style="justify-content:center">'+btns+'</div></div>'}
+function gateFor(){
+  if(!S.user)return gate('인증 목회자 전용 공간입니다','먼저 구글 계정으로 로그인한 뒤 목회자 인증을 신청해 주세요.','<button class="btn primary" data-act="login">Google로 로그인</button>');
+  if(S.user.status==='pending')return gate('인증 심사 중입니다','심사가 끝나면 이 공간을 사용할 수 있습니다. 진행 상황은 목회자 인증 메뉴에서 볼 수 있습니다.','<button class="btn primary" data-act="verify">진행 상황 보기</button>');
+  return gate('인증 목회자 전용 공간입니다','채팅과 자료실은 심사를 통과한 목회자만 쓸 수 있습니다.','<button class="btn primary" data-act="verify">목회자 인증 신청</button>');
+}
+function bindGate(root){$$('[data-act]',root).forEach(function(b){b.addEventListener('click',function(){b.dataset.act==='login'?openLogin():go('verify')})})}
+
+/* ---------- home ---------- */
+function renderHome(){
+  var el=$('#v-home');
+  el.innerHTML='<div class="hero"><h1>전국의 목회자가 <em>한곳에서</em> 만나는 곳</h1>'+
+   '<p class="lead">교회를 소개하고, 목회자끼리 대화하고, 예배와 교육에 쓰는 자료를 나눕니다. 일반 성도는 가까운 교회를 찾아볼 수 있습니다.</p>'+
+   '<form class="searchbar" id="hs"><input type="search" id="hq" placeholder="교회 이름, 지역, 교단으로 찾기" aria-label="교회 검색"><button class="btn primary" type="submit">검색</button></form>'+
+   '<div class="chips">'+REGIONS.map(function(r){return '<button class="chip" data-r="'+r+'">'+r+'</button>'}).join('')+'</div></div>'+
+  '<div class="sec"><h2>이용 방식</h2><p class="sub">구글 계정 하나로 시작하고, 역할에 따라 쓸 수 있는 기능이 나뉩니다.</p><div class="cols3">'+
+   '<div class="panel"><h3>방문자</h3><p>로그인 없이 볼 수 있습니다.</p><ul><li>교회 검색과 소개 페이지</li><li>예배 시간, 위치, 소식</li></ul></div>'+
+   '<div class="panel"><h3>일반회원</h3><p>구글 로그인 후 쓸 수 있습니다.</p><ul><li>교회 즐겨찾기</li><li>교회에 문의 보내기</li></ul></div>'+
+   '<div class="panel"><h3>인증 목회자</h3><p>심사를 통과한 목회자만 쓸 수 있습니다.</p><ul><li>목회자 라운지 채팅</li><li>PPT, 사진, 서식 자료실</li><li>우리 교회 페이지 운영</li></ul></div></div></div>'+
+  '<div class="sec"><h2>목회자 인증 절차</h2><p class="sub">구글 로그인은 이메일 주인만 확인합니다. 목사 신분은 아래 네 단계로 따로 확인합니다.</p><div class="steps">'+
+   '<div><span class="stepno">1단계</span><b>기본 정보</b><span>이름, 교단, 노회, 교회 정보를 입력합니다.</span></div>'+
+   '<div><span class="stepno">2단계</span><b>증빙 서류</b><span>안수증과 교회 소속 서류를 비공개로 올립니다.</span></div>'+
+   '<div><span class="stepno">3단계</span><b>교차 확인</b><span>교회 전화 확인과 인증 목회자 2명의 추천을 받습니다.</span></div>'+
+   '<div><span class="stepno">4단계</span><b>승인</b><span>승인되면 인증 배지가 붙고, 서류는 삭제합니다.</span></div></div></div>'+
+  '<div class="sec"><h2>이단·사이비 차단 원칙</h2><p class="sub">운영자가 신학을 판단하지 않고, 공개된 기준을 모두에게 똑같이 적용합니다.</p><div class="cols3">'+
+   '<div class="panel"><h3>가입 기준 공개</h3><p>기본 신조 동의서에 서명해야 하고, 인정하는 교단 범위를 약관에 밝힙니다.</p></div>'+
+   '<div class="panel"><h3>교단 결의 근거</h3><p>주요 교단이 공통으로 이단·사이비로 규정한 단체의 소속자는 가입할 수 없습니다. 목록과 근거는 공개합니다.</p></div>'+
+   '<div class="panel"><h3>심의와 이의제기</h3><p>애매한 경우는 자문위원회가 심의하고, 차단된 사람은 소명할 수 있습니다.</p></div></div></div>'+
+  '<div class="sec"><h2>최근 소개된 교회</h2><p class="sub">예시 데이터입니다.</p><div class="grid" id="homeGrid"></div></div>';
+  $('#homeGrid').innerHTML=CHURCHES.slice(0,4).map(churchCard).join('');
+  bindCards($('#homeGrid'));
+  $('#hs').addEventListener('submit',function(e){e.preventDefault();S.q=$('#hq').value.trim();S.region='';S.denom='';go('churches')});
+  $$('.chip',el).forEach(function(c){c.addEventListener('click',function(){S.q='';S.region=c.dataset.r;S.denom='';go('churches')})});
+}
+
+/* ---------- churches ---------- */
+function churchCard(c){
+  return '<article class="ccard"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><h3><button class="linkbtn" data-open="'+c.id+'">'+esc(c.name)+'</button></h3><span class="badge" title="목회자 인증을 마친 교회입니다">인증</span></div>'+
+   '<div class="meta">'+esc(c.region)+' '+esc(c.city)+' · '+esc(c.denom)+' · '+esc(c.pastor)+'</div>'+
+   '<p class="intro">'+esc(c.intro)+'</p>'+
+   '<div class="row"><div style="display:flex;gap:6px;flex-wrap:wrap">'+c.tags.slice(0,2).map(function(t){return '<span class="pill">'+esc(t)+'</span>'}).join('')+'</div>'+
+   '<button class="btn sm" data-fav="'+c.id+'" aria-pressed="'+(S.favs[c.id]?'true':'false')+'">'+(S.favs[c.id]?'즐겨찾기 해제':'즐겨찾기')+'</button></div></article>';
+}
+function bindCards(root){
+  $$('[data-open]',root).forEach(function(b){b.addEventListener('click',function(){openChurch(+b.dataset.open)})});
+  $$('[data-fav]',root).forEach(function(b){b.addEventListener('click',function(){
+    if(!S.user){openLogin();return}
+    var id=+b.dataset.fav;S.favs[id]=!S.favs[id];toast(S.favs[id]?'즐겨찾기에 추가했습니다.':'즐겨찾기에서 뺐습니다.');
+    if(S.view==='churches')drawChurches();else go(S.view)})});
+}
+function renderChurches(){
+  var el=$('#v-churches');
+  el.innerHTML='<div class="pagehead"><h1>교회 찾기</h1><p>지역과 교단으로 교회를 찾아보세요. 로그인하지 않아도 볼 수 있습니다.</p></div>'+
+   '<div class="filters"><div class="field"><label for="fq">교회 이름·소개 검색</label><input type="search" id="fq" value="'+esc(S.q)+'" placeholder="예: 청년부, 한글 교실"></div>'+
+   '<div class="field"><label for="fr">지역</label><select id="fr"><option value="">전체</option>'+REGIONS.map(function(r){return '<option'+(S.region===r?' selected':'')+'>'+r+'</option>'}).join('')+'</select></div>'+
+   '<div class="field"><label for="fd">교단</label><select id="fd"><option value="">전체</option>'+DENOMS.map(function(r){return '<option'+(S.denom===r?' selected':'')+'>'+r+'</option>'}).join('')+'</select></div>'+
+   '<button class="btn" id="ff" aria-pressed="'+S.favOnly+'">즐겨찾기만</button></div>'+
+   '<div id="clist"></div>';
+  $('#fq').addEventListener('input',function(e){S.q=e.target.value;drawChurches()});
+  $('#fr').addEventListener('change',function(e){S.region=e.target.value;drawChurches()});
+  $('#fd').addEventListener('change',function(e){S.denom=e.target.value;drawChurches()});
+  $('#ff').addEventListener('click',function(){if(!S.user){openLogin();return}S.favOnly=!S.favOnly;this.setAttribute('aria-pressed',S.favOnly);drawChurches()});
+  drawChurches();
+}
+function drawChurches(){
+  var q=S.q.toLowerCase();
+  var list=CHURCHES.filter(function(c){
+    var hay=(c.name+c.region+c.city+c.denom+c.pastor+c.intro+c.tags.join(' ')).toLowerCase();
+    return (!q||hay.indexOf(q)>-1)&&(!S.region||c.region===S.region)&&(!S.denom||c.denom===S.denom)&&(!S.favOnly||S.favs[c.id]);
+  });
+  var box=$('#clist');
+  box.innerHTML=list.length?'<p class="lbl" style="margin-bottom:10px">'+list.length+'곳</p><div class="grid">'+list.map(churchCard).join('')+'</div>':'<div class="empty">조건에 맞는 교회가 없습니다. 검색어나 지역을 바꿔 보세요.</div>';
+  bindCards(box);
+}
+function openChurch(id){
+  var c=CHURCHES.filter(function(x){return x.id===id})[0];
+  openModal('<button class="btn sm x" id="mx">닫기</button>'+
+   '<div><span class="badge">인증 목회자 운영</span><h2 style="margin-top:6px">'+esc(c.name)+'</h2><p class="meta" style="color:var(--muted)">'+esc(c.denom)+' · '+esc(c.pastor)+'</p></div>'+
+   '<p>'+esc(c.intro)+'</p>'+
+   '<div><div class="lbl">예배 시간</div><table class="times"><tbody>'+c.times.map(function(t){return '<tr><td>'+esc(t[0])+'</td><td style="text-align:right;font-variant-numeric:tabular-nums">'+esc(t[1])+'</td></tr>'}).join('')+'</tbody></table></div>'+
+   '<div class="map"><b style="color:var(--fg)">'+esc(c.addr)+'</b><br>대표전화 '+esc(c.tel)+'<br>지도는 카카오맵 연동 후 이 자리에 표시됩니다.</div>'+
+   '<div><div class="lbl">교회 소식</div>'+c.news.map(function(n){return '<div style="display:flex;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)"><span style="color:var(--muted);font-variant-numeric:tabular-nums">'+esc(n[0])+'</span><span>'+esc(n[1])+'</span></div>'}).join('')+'</div>'+
+   '<div class="field"><label for="inq">교회에 문의 보내기</label><textarea id="inq" placeholder="새가족 등록, 예배 방문 등 궁금한 점을 적어 주세요."></textarea></div>'+
+   '<div class="actions"><button class="btn primary" id="send">문의 보내기</button><button class="btn" id="fv">'+(S.favs[id]?'즐겨찾기 해제':'즐겨찾기')+'</button></div>');
+  $('#mx').addEventListener('click',closeModal);
+  $('#send').addEventListener('click',function(){
+    if(!S.user){closeModal();openLogin();return}
+    if(!$('#inq').value.trim()){toast('문의 내용을 입력해 주세요.');return}
+    closeModal();toast('문의가 '+c.name+'에 전달되었습니다. (시안)')});
+  $('#fv').addEventListener('click',function(){if(!S.user){closeModal();openLogin();return}S.favs[id]=!S.favs[id];closeModal();toast(S.favs[id]?'즐겨찾기에 추가했습니다.':'즐겨찾기에서 뺐습니다.');if(S.view==='churches')drawChurches();else go(S.view)});
+}
+
+/* ---------- library ---------- */
+function renderLibrary(){
+  var el=$('#v-library');
+  if(!isPastor()){el.innerHTML='<div class="pagehead"><h1>자료실</h1></div>'+gateFor();bindGate(el);return}
+  el.innerHTML='<div class="pagehead" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end"><div><h1>자료실</h1><p>예배, 교육, 행사에 쓰는 PPT와 사진, 서식을 나눕니다.</p></div><button class="btn primary" id="up">자료 올리기</button></div>'+
+   '<div class="filters" style="grid-template-columns:2fr 1fr"><div class="field"><label for="lq">자료 검색</label><input type="search" id="lq" value="'+esc(S.libQ)+'" placeholder="제목이나 태그로 찾기"></div>'+
+   '<div class="field"><label for="lc">분류</label><select id="lc"><option value="">전체</option>'+LIBCATS.map(function(c){return '<option'+(S.libCat===c?' selected':'')+'>'+c+'</option>'}).join('')+'</select></div></div>'+
+   '<div id="llist"></div>'+
+   '<p class="lbl" style="margin-top:12px;font-weight:400">찬송가·CCM 악보와 가사, 유료 폰트, 스톡 이미지는 올릴 수 없습니다. 권리 침해가 의심되면 신고해 주세요.</p>';
+  $('#lq').addEventListener('input',function(e){S.libQ=e.target.value;drawLib()});
+  $('#lc').addEventListener('change',function(e){S.libCat=e.target.value;drawLib()});
+  $('#up').addEventListener('click',openUpload);
+  drawLib();
+}
+function drawLib(){
+  var q=S.libQ.toLowerCase();
+  var list=LIB.filter(function(r){return (!q||(r.title+r.tags.join(' ')+r.by).toLowerCase().indexOf(q)>-1)&&(!S.libCat||r.cat===S.libCat)});
+  var b=$('#llist');
+  if(!list.length){b.innerHTML='<div class="empty">조건에 맞는 자료가 없습니다.</div>';return}
+  b.innerHTML='<div class="tablewrap"><table><thead><tr><th>자료</th><th>분류</th><th>올린 교회</th><th class="num">받은 횟수</th><th></th></tr></thead><tbody>'+
+   list.map(function(r){return '<tr><td><span class="ftype">'+esc(r.type)+'</span> <b>'+esc(r.title)+'</b><br><span style="color:var(--muted);font-size:13px">'+esc(r.date)+' · '+esc(r.size)+' · '+r.tags.map(function(t){return '#'+esc(t)}).join(' ')+'</span></td><td>'+esc(r.cat)+'</td><td>'+esc(r.by)+'</td><td class="num">'+r.n+'</td><td style="white-space:nowrap"><button class="btn sm primary" data-dl="'+r.id+'">내려받기</button> <button class="rep" data-rl="'+r.id+'">신고</button></td></tr>'}).join('')+'</tbody></table></div>';
+  $$('[data-dl]',b).forEach(function(x){x.addEventListener('click',function(){var r=LIB.filter(function(y){return y.id===+x.dataset.dl})[0];r.n++;toast('"'+r.title+'" 내려받기를 시작합니다. (시안이라 실제 파일은 없습니다)');drawLib()})});
+  $$('[data-rl]',b).forEach(function(x){x.addEventListener('click',function(){toast('신고가 접수되었습니다. 운영팀이 확인합니다.')})});
+}
+function openUpload(){
+  openModal('<button class="btn sm x" id="mx">닫기</button><h2>자료 올리기</h2>'+
+   '<div class="field"><label for="ut">제목</label><input type="text" id="ut" placeholder="예: 새가족 환영 포스터 시안"></div>'+
+   '<div class="two"><div class="field"><label for="uc">분류</label><select id="uc">'+LIBCATS.map(function(c){return '<option>'+c+'</option>'}).join('')+'</select></div>'+
+   '<div class="field"><label for="ug">태그 (쉼표로 구분)</label><input type="text" id="ug" placeholder="포스터, 새가족"></div></div>'+
+   '<div class="field"><label for="uf">파일 (PPT, PDF, 이미지, 문서 · 최대 50MB)</label><input type="file" id="uf" accept=".ppt,.pptx,.pdf,.doc,.docx,.xlsx,.png,.jpg,.jpeg"></div>'+
+   '<label class="check"><input type="checkbox" id="ur"><span>이 자료의 권리를 제가 가지고 있거나 사용 허락을 받았습니다. 찬송가·CCM 악보와 가사, 유료 폰트, 스톡 이미지는 포함하지 않았습니다.</span></label>'+
+   '<button class="btn primary" id="us">올리기</button>');
+  $('#mx').addEventListener('click',closeModal);
+  $('#us').addEventListener('click',function(){
+    var t=$('#ut').value.trim(),f=$('#uf').files[0];
+    if(!t){toast('제목을 입력해 주세요.');return}
+    if(!f){toast('파일을 선택해 주세요.');return}
+    if(f.size>50*1024*1024){toast('파일이 50MB를 넘습니다.');return}
+    if(!$('#ur').checked){toast('권리 확인에 동의해 주세요.');return}
+    var ext=(f.name.split('.').pop()||'').toUpperCase();
+    var type=/^(PPT|PPTX)$/.test(ext)?'PPT':/^(PNG|JPG|JPEG)$/.test(ext)?'이미지':ext;
+    LIB.unshift({id:nextLib++,title:t,type:type,cat:$('#uc').value,by:(S.user.church||'내 교회'),n:0,date:'2026-10-06',size:(f.size/1048576>=1?(f.size/1048576).toFixed(1)+'MB':Math.max(1,Math.round(f.size/1024))+'KB'),tags:$('#ug').value.split(',').map(function(x){return x.trim()}).filter(Boolean)});
+    closeModal();toast('자료를 올렸습니다. (시안이라 파일은 저장되지 않습니다)');drawLib();
+  });
+}
+
+/* ---------- chat ---------- */
+var HOLD=/(https?:\/\/|www\.|포교|전도 모집|가입 문의|수강생 모집)/i;
+function renderChat(){
+  var el=$('#v-chat');
+  if(!isPastor()){el.innerHTML='<div class="pagehead"><h1>목회자 라운지</h1></div>'+gateFor();bindGate(el);return}
+  var room=ROOMS.filter(function(r){return r.id===S.room})[0];
+  el.innerHTML='<div class="pagehead"><h1>목회자 라운지</h1><p>인증 목회자만 들어올 수 있는 대화방입니다.</p></div>'+
+   '<div class="chat"><div class="rooms" id="rooms">'+ROOMS.map(function(r){return '<button data-room="'+r.id+'"'+(r.id===S.room?' aria-current="true"':'')+'><b>'+esc(r.name)+'</b><span>'+S.chats[r.id].length+'개 메시지</span></button>'}).join('')+'</div>'+
+   '<div class="convo"><div class="convo-head"><b>'+esc(room.name)+'</b><p>'+esc(room.desc)+'</p></div><div class="msgs" id="msgs"></div>'+
+   '<form class="composer" id="cf"><input type="text" id="ci" placeholder="메시지를 입력하세요" autocomplete="off" aria-label="메시지"><button class="btn primary" type="submit">보내기</button></form>'+
+   '<div class="hint">외부 링크나 포교·모집성 문구는 운영팀 검토 후에 보입니다. 부적절한 메시지는 신고해 주세요.</div></div></div>';
+  $$('[data-room]',el).forEach(function(b){b.addEventListener('click',function(){S.room=b.dataset.room;renderChat()})});
+  $('#cf').addEventListener('submit',function(e){
+    e.preventDefault();var v=$('#ci').value.trim();if(!v)return;
+    var held=HOLD.test(v);
+    S.chats[S.room].push({who:S.user.name,place:'',tx:v,t:'방금',mine:true,held:held,rep:false});
+    $('#ci').value='';drawMsgs();
+    if(held)toast('운영팀 검토가 필요한 문구가 있어 다른 사람에게는 아직 보이지 않습니다.');
+  });
+  drawMsgs();
+}
+function drawMsgs(){
+  var box=$('#msgs');
+  box.innerHTML=S.chats[S.room].map(function(m,i){
+    var body=m.held?'<div class="bubble">운영팀 검토 대기 중인 메시지입니다. 승인되면 다른 목회자에게 보입니다.<br><span style="color:var(--fg)">'+esc(m.tx)+'</span></div>':'<div class="bubble">'+esc(m.tx)+'</div>';
+    return '<div class="msg'+(m.mine?' mine':'')+(m.held?' held':'')+'"><div class="who"><b style="color:var(--fg)">'+esc(m.who)+'</b>'+(m.place?'<span>'+esc(m.place)+'</span>':'')+'<span class="badge" style="padding:0 6px;font-size:11px">인증</span><span>'+esc(m.t)+'</span>'+(m.mine?'':'<button class="rep" data-i="'+i+'">'+(m.rep?'신고됨':'신고')+'</button>')+'</div>'+body+'</div>';
+  }).join('');
+  $$('.rep',box).forEach(function(b){b.addEventListener('click',function(){var m=S.chats[S.room][+b.dataset.i];if(m.rep)return;m.rep=true;S.reports.unshift({id:Date.now(),target:'라운지 · '+m.who+'의 메시지',reason:'회원 신고',state:'open'});drawMsgs();toast('신고가 접수되었습니다.')})});
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ---------- verify ---------- */
+var STEPS=['기본 정보','증빙 서류','추천·확인','동의와 제출'];
+function myApp(){var r=null;S.apps.forEach(function(a){if(S.user&&a.key===S.user.key)r=a});return r}
+function renderVerify(){
+  var el=$('#v-verify');
+  var head='<div class="pagehead"><h1>목회자 인증</h1><p>인증을 마친 목회자만 라운지와 자료실을 쓸 수 있고, 교회 페이지를 운영할 수 있습니다.</p></div>';
+  if(!S.user){el.innerHTML=head+gate('로그인이 필요합니다','구글 계정으로 로그인한 뒤 인증을 신청할 수 있습니다.','<button class="btn primary" data-act="login">Google로 로그인</button>');bindGate(el);return}
+  if(S.user.role==='admin'){el.innerHTML=head+'<div class="notice">운영자 계정입니다. 심사는 운영 메뉴에서 진행합니다.</div>';return}
+  var app=myApp();
+  if(S.user.status==='approved'){el.innerHTML=head+'<div class="panel" style="max-width:560px"><span class="badge">인증 목회자</span><h3 style="margin-top:8px">인증이 완료되었습니다</h3><p>'+esc(S.user.name)+' 님은 라운지와 자료실을 쓸 수 있습니다. 인증은 1년 뒤 갱신해야 합니다.</p></div>';return}
+  if(S.user.status==='pending'&&app){
+    var pend=['접수','서류 검토','교회 전화 확인','추천인 확인','결과 안내'],done=1+app.checks.filter(Boolean).length;
+    el.innerHTML=head+'<div class="panel" style="max-width:560px"><span class="pill warn">심사 중</span><h3 style="margin-top:8px">'+esc(app.church)+' · '+esc(app.name)+'</h3><p>접수일 '+esc(app.date)+'. 보통 2~3일 안에 결과를 알려 드립니다.</p>'+
+     '<div class="timeline" style="margin-top:12px">'+pend.map(function(p,i){return '<div><span class="dot'+(i<done?' on':'')+'"></span><span>'+p+'</span></div>'}).join('')+'</div>'+
+     '<p style="margin-top:12px">시안에서는 운영자 계정으로 전환해 이 신청을 승인해 볼 수 있습니다.</p></div>';return}
+  if(S.user.status==='rejected'&&app&&S.step===0&&!S.form._retry){
+    el.innerHTML=head+'<div class="panel" style="max-width:560px"><span class="pill bad">반려</span><h3 style="margin-top:8px">보완이 필요합니다</h3><p>사유: '+esc(app.reason||'서류 보완 필요')+'</p><div class="actions" style="margin-top:12px"><button class="btn primary" id="retry">다시 신청</button></div></div>';
+    $('#retry').addEventListener('click',function(){S.form._retry=1;renderVerify()});return}
+  var f=S.form,s=S.step,h='';
+  h+='<div class="stepper">'+STEPS.map(function(n,i){return '<span class="'+(i===s?'on':i<s?'done':'')+'">'+(i+1)+'. '+n+'</span>'}).join('')+'</div><div class="form">';
+  if(s===0){
+    h+='<div class="two"><div class="field"><label for="f-name">성명</label><input type="text" id="f-name" value="'+esc(f.name||S.user.name.replace(' 목사',''))+'"></div><div class="field"><label for="f-rank">직분</label><select id="f-rank">'+['담임목사','부목사','전도사 (목사 안수 전)','선교사'].map(function(x){return '<option'+(f.rank===x?' selected':'')+'>'+x+'</option>'}).join('')+'</select></div></div>'+
+     '<div class="two"><div class="field"><label for="f-den">소속 교단</label><select id="f-den">'+DENOMS.map(function(x){return '<option'+(f.den===x?' selected':'')+'>'+x+'</option>'}).join('')+'</select></div><div class="field"><label for="f-pres">노회·지방회</label><input type="text" id="f-pres" value="'+esc(f.pres||'')+'" placeholder="예: 서울노회"></div></div>'+
+     '<div class="two"><div class="field"><label for="f-church">교회 이름</label><input type="text" id="f-church" value="'+esc(f.church||'')+'"></div><div class="field"><label for="f-tel">교회 대표전화</label><input type="tel" id="f-tel" value="'+esc(f.tel||'')+'" placeholder="031-000-0000"></div></div>'+
+     '<div class="field"><label for="f-addr">교회 주소</label><input type="text" id="f-addr" value="'+esc(f.addr||'')+'"></div>';
+  }else if(s===1){
+    h+='<div class="notice">주민등록번호 뒷자리와 주소는 가리고 올려 주세요. 서류는 비공개로 저장되고 심사가 끝나면 삭제됩니다.</div>'+
+     '<div class="field"><label for="f-d1">목사 안수증 또는 노회 소속 증명서 (필수)</label><input type="file" id="f-d1" accept=".pdf,.png,.jpg,.jpeg"><span class="lbl" style="font-weight:400">'+(f.d1?'선택됨: '+esc(f.d1):'')+'</span></div>'+
+     '<div class="field"><label for="f-d2">교회 고유번호증, 사업자등록증, 재직증명서 중 하나 (필수)</label><input type="file" id="f-d2" accept=".pdf,.png,.jpg,.jpeg"><span class="lbl" style="font-weight:400">'+(f.d2?'선택됨: '+esc(f.d2):'')+'</span></div>';
+  }else if(s===2){
+    h+='<div class="notice">이미 인증받은 목회자 2명의 추천이 있으면 심사가 빨라집니다. 추천인에게 확인 요청 메일이 갑니다.</div>'+
+     '<div class="two"><div class="field"><label for="f-r1">추천인 1 이메일</label><input type="email" id="f-r1" value="'+esc(f.r1||'')+'"></div><div class="field"><label for="f-r2">추천인 2 이메일</label><input type="email" id="f-r2" value="'+esc(f.r2||'')+'"></div></div>'+
+     '<div class="field"><label for="f-site">교회 공식 홈페이지 또는 공식 이메일 (선택)</label><input type="text" id="f-site" value="'+esc(f.site||'')+'" placeholder="있으면 본인 확인에 함께 사용합니다"></div>'+
+     '<p style="color:var(--muted);font-size:14px">운영자가 위에 적은 교회 대표전화로 직접 전화해 소속을 확인합니다.</p>';
+  }else{
+    h+='<div class="panel"><h3>제출 전 확인</h3><dl class="kv" style="margin:8px 0 0"><div><dt>성명</dt><dd>'+esc(f.name)+' ('+esc(f.rank)+')</dd></div><div><dt>교회</dt><dd>'+esc(f.church)+'</dd></div><div><dt>교단·노회</dt><dd>'+esc(f.den)+' · '+esc(f.pres)+'</dd></div><div><dt>서류</dt><dd>'+esc(f.d1)+', '+esc(f.d2)+'</dd></div></dl></div>'+
+     '<label class="check"><input type="checkbox" id="c1"><span>종교 관련 정보(소속 교단과 직분)를 인증 심사에 쓰는 것에 동의합니다. (민감정보 수집·이용 동의, 필수)</span></label>'+
+     '<label class="check"><input type="checkbox" id="c2"><span>사도신경 등 기본 신조에 동의하며, 약관에 공개된 인정 교단 기준을 확인했습니다. (필수)</span></label>'+
+     '<label class="check"><input type="checkbox" id="c3"><span>주요 교단이 이단·사이비로 규정한 단체에 소속되어 있지 않습니다. 사실과 다르면 인증이 취소됩니다. (필수)</span></label>'+
+     '<label class="check"><input type="checkbox" id="c4"><span>제출한 정보가 사실이며, 심사가 끝나면 서류가 삭제된다는 안내를 확인했습니다. (필수)</span></label>';
+  }
+  h+='<div class="actions">'+(s>0?'<button class="btn" id="prev">이전</button>':'')+'<button class="btn primary" id="next">'+(s===3?'인증 신청 제출':'다음')+'</button></div></div>';
+  el.innerHTML=head+h;
+  if(s>0)$('#prev').addEventListener('click',function(){collect();S.step--;renderVerify()});
+  $('#next').addEventListener('click',function(){
+    collect();
+    if(s===0){if(!f.name||!f.church||!f.pres||!/\d/.test(f.tel||'')){toast('성명, 교회 이름, 노회, 대표전화를 모두 입력해 주세요.');return}}
+    if(s===1){if(!f.d1||!f.d2){toast('서류 2개를 모두 선택해 주세요.');return}}
+    if(s===2){if(!/@/.test(f.r1||'')||!/@/.test(f.r2||'')){toast('추천인 이메일 2개를 입력해 주세요.');return}if(f.r1===f.r2){toast('서로 다른 추천인 2명이 필요합니다.');return}}
+    if(s===3){if(!($('#c1').checked&&$('#c2').checked&&$('#c3').checked&&$('#c4').checked)){toast('필수 항목에 모두 동의해 주세요.');return}
+      S.apps=S.apps.filter(function(a){return a.key!==S.user.key});
+      S.apps.unshift({id:nextApp++,key:S.user.key,name:f.name,church:f.church,denom:f.den,presb:f.pres,tel:f.tel,date:'2026-10-06',docs:[f.d1,f.d2],refs:[f.r1,f.r2],checks:[false,false,false,false],status:'pending',reason:''});
+      S.user.status='pending';S.step=0;S.form={};toast('인증 신청이 접수되었습니다.');refresh();return}
+    S.step++;renderVerify();
+  });
+  function collect(){
+    var g=function(id){var x=$('#'+id);return x?x.value.trim():undefined};
+    if(s===0){f.name=g('f-name');f.rank=g('f-rank');f.den=g('f-den');f.pres=g('f-pres');f.church=g('f-church');f.tel=g('f-tel');f.addr=g('f-addr')}
+    if(s===1){var a=$('#f-d1').files[0],b=$('#f-d2').files[0];if(a)f.d1=a.name;if(b)f.d2=b.name}
+    if(s===2){f.r1=g('f-r1');f.r2=g('f-r2');f.site=g('f-site')}
+  }
+  if(s===1){['f-d1','f-d2'].forEach(function(id){$('#'+id).addEventListener('change',function(){var x=this.files[0];if(x)f[id==='f-d1'?'d1':'d2']=x.name;var sp=this.nextElementSibling;if(sp)sp.textContent=x?'선택됨: '+x.name:''})})}
+}
+
+/* ---------- admin ---------- */
+function renderAdmin(){
+  var el=$('#v-admin');
+  if(!isAdmin()){el.innerHTML=gate('운영자 전용입니다','운영자 계정으로 로그인해 주세요.','<button class="btn primary" data-act="login">로그인</button>');bindGate(el);return}
+  var pending=S.apps.filter(function(a){return a.status==='pending'}).length,openR=S.reports.filter(function(r){return r.state==='open'}).length;
+  var h='<div class="pagehead"><h1>운영</h1><p>인증 심사와 신고 처리를 합니다. 애매한 건은 자문위원회에 넘깁니다.</p></div>'+
+   '<div class="tabs"><button data-t="apps" aria-pressed="'+(S.tab==='apps')+'">인증 심사 ('+pending+')</button><button data-t="reports" aria-pressed="'+(S.tab==='reports')+'">신고 ('+openR+')</button><button data-t="rules" aria-pressed="'+(S.tab==='rules')+'">심사 기준</button></div>';
+  if(S.tab==='apps'){
+    h+=S.apps.map(function(a){
+      var all=a.checks.every(Boolean),st=a.status==='pending'?'<span class="pill warn">심사 대기</span>':a.status==='approved'?'<span class="pill ok">승인</span>':a.status==='hold'?'<span class="pill">보류</span>':'<span class="pill bad">반려</span>';
+      return '<div class="appcard"><header><div><b style="font-family:var(--f-display);font-size:18px">'+esc(a.name)+'</b> <span style="color:var(--muted)">· '+esc(a.church)+'</span></div>'+st+'</header>'+
+       '<dl class="kv"><div><dt>교단·노회</dt><dd>'+esc(a.denom)+' · '+esc(a.presb)+'</dd></div><div><dt>교회 대표전화</dt><dd>'+esc(a.tel)+'</dd></div><div><dt>접수일</dt><dd>'+esc(a.date)+'</dd></div><div><dt>서류</dt><dd>'+a.docs.map(esc).join('<br>')+'</dd></div><div><dt>추천인</dt><dd>'+a.refs.map(esc).join('<br>')+'</dd></div></dl>'+
+       (a.status==='pending'||a.status==='hold'?'<div class="checks">'+CHECKS.map(function(c,i){return '<label class="check"><input type="checkbox" data-a="'+a.id+'" data-c="'+i+'"'+(a.checks[i]?' checked':'')+'><span>'+c+'</span></label>'}).join('')+'</div>'+
+       '<div class="actions"><button class="btn primary sm" data-ap="'+a.id+'"'+(all?'':' disabled')+'>승인</button><button class="btn sm" data-hold="'+a.id+'">보류</button><input type="text" id="rj'+a.id+'" placeholder="반려 사유 (예: 안수증 판독 불가)" aria-label="반려 사유"><button class="btn danger sm" data-rj="'+a.id+'">반려</button></div>':(a.status==='rejected'?'<p style="color:var(--muted);font-size:14px">반려 사유: '+esc(a.reason)+'</p>':''))+'</div>';
+    }).join('')||'<div class="empty">대기 중인 신청이 없습니다.</div>';
+  }else if(S.tab==='reports'){
+    h+=S.reports.map(function(r){return '<div class="appcard"><header><b>'+esc(r.target)+'</b>'+(r.state==='open'?'<span class="pill warn">처리 전</span>':'<span class="pill ok">'+esc(r.state)+'</span>')+'</header><p style="color:var(--muted)">'+esc(r.reason)+'</p>'+(r.state==='open'?'<div class="actions"><button class="btn sm" data-rp="'+r.id+'|경고 완료">경고</button><button class="btn sm" data-rp="'+r.id+'|삭제 완료">게시물 삭제</button><button class="btn sm danger" data-rp="'+r.id+'|계정 정지">계정 정지</button><button class="btn sm" data-rp="'+r.id+'|기각">기각</button><button class="btn sm" data-rp="'+r.id+'|위원회 이관">위원회 이관</button></div>':'')+'</div>'}).join('')||'<div class="empty">신고가 없습니다.</div>';
+  }else{
+    h+='<div class="cols3"><div class="panel"><h3>승인 조건</h3><ul><li>안수증 또는 노회 소속 증명 확인</li><li>교회 대표전화로 직접 확인</li><li>인증 목회자 2명 추천 확인</li><li>가입 제한 목록과 대조</li></ul></div>'+
+     '<div class="panel"><h3>가입 제한 근거</h3><ul><li>주요 교단이 공통으로 규정한 이단·사이비 단체는 소속자 가입 불가</li><li>교단별로 의견이 갈리는 사안은 목록에 넣지 않고 위원회가 심의</li><li>목록과 근거 자료는 공개</li></ul></div>'+
+     '<div class="panel"><h3>사후 관리</h3><ul><li>신규 회원은 한동안 채팅과 업로드 제한</li><li>외부 링크와 모집성 문구는 검토 후 노출</li><li>1년마다 재인증, 신고 시 임시 정지</li><li>차단된 사람은 소명 가능</li></ul></div></div>';
+  }
+  el.innerHTML=h;
+  $$('.tabs button',el).forEach(function(b){b.addEventListener('click',function(){S.tab=b.dataset.t;renderAdmin()})});
+  $$('[data-c]',el).forEach(function(c){c.addEventListener('change',function(){var a=find(+c.dataset.a);a.checks[+c.dataset.c]=c.checked;renderAdmin()})});
+  $$('[data-ap]',el).forEach(function(b){b.addEventListener('click',function(){var a=find(+b.dataset.ap);a.status='approved';if(a.key){accounts[a.key].status='approved';accounts[a.key].role='pastor';accounts[a.key].church=a.church}toast(a.name+' 님을 승인했습니다.');renderAdmin()})});
+  $$('[data-hold]',el).forEach(function(b){b.addEventListener('click',function(){var a=find(+b.dataset.hold);a.status='hold';toast('보류했습니다. 추가 서류를 요청하세요.');renderAdmin()})});
+  $$('[data-rj]',el).forEach(function(b){b.addEventListener('click',function(){var a=find(+b.dataset.rj);a.status='rejected';a.reason=($('#rj'+a.id).value.trim())||'서류 보완 필요';if(a.key){accounts[a.key].status='rejected'}toast('반려했습니다.');renderAdmin()})});
+  $$('[data-rp]',el).forEach(function(b){b.addEventListener('click',function(){var p=b.dataset.rp.split('|');var r=S.reports.filter(function(x){return String(x.id)===p[0]})[0];r.state=p[1];toast('신고를 처리했습니다: '+p[1]);renderAdmin()})});
+  function find(id){return S.apps.filter(function(a){return a.id===id})[0]}
+}
+
+go('home');
+})();
+</script>
+
+</body></html>
